@@ -1,4 +1,4 @@
-package DailyPractice
+package main
 
 func main() {
 	println("hello world")
