@@ -53,9 +53,7 @@ func DeferReturn2() (a int) {
 func DeferClosureLoopV1() {
 	for i := 0; i < 10; i++ {
 		defer func() {
-			fmt.Print(i)
-			fmt.Printf("--%p--", &i)
-			fmt.Println()
+			fmt.Printf("--%p--%d\n", &i, i)
 		}()
 	}
 }
@@ -85,7 +83,7 @@ func main() {
 	//Defer()
 	DeferClosureLoopV1()
 	fmt.Println("-----")
-	DeferClosureLoopV2()
-	fmt.Println("-----")
-	DeferClosureLoopV3()
+	//DeferClosureLoopV2()
+	//fmt.Println("-----")
+	//DeferClosureLoopV3()
 }
