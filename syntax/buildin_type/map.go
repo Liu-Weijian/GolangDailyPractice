@@ -24,6 +24,16 @@ func Map() {
 	delete(m2, "key1")
 }
 
+func GoMap() {
+	m1 := make(map[int]int, 16)
+	for i := 0; i < 10; i++ {
+		go func() {
+			m1[i] = i
+		}()
+	}
+}
+
 func main() {
-	Map()
+	//Map()
+	//GoMap()
 }
