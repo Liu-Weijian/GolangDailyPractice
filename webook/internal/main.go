@@ -2,11 +2,31 @@ package main
 
 import (
 	"GoProject/webook/internal/web"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"strings"
+	"time"
 )
 
 func main() {
 	server := gin.Default()
+
+	server.Use(cors.New(cors.Config{
+		//AllowOrigins: []string{"http://localhost:3000"},
+		//AllowMethods:     []string{"POST", "PATCH"},
+		AllowHeaders: []string{"Content-Type", "Authorization"},
+		//ExposeHeaders:    []string{},
+
+		//cookie相关
+		AllowCredentials: true,
+		AllowOriginFunc: func(origin string) bool {
+			if strings.HasPrefix(origin, "http://localhost") || strings.HasPrefix(origin, "https://localhost") {
+				return true
+			}
+			return strings.Contains(origin, "your_company.com")
+		},
+		MaxAge: 12 * time.Hour,
+	}))
 
 	userHandler(server)
 
@@ -18,7 +38,7 @@ func main() {
 }
 
 func userHandler(server *gin.Engine) {
-	u := &web.UserHandler{}
+	u := web.NewUserHandler()
 	//非RESTful风格
 	server.POST("/users/signup", u.SignUp)
 
