@@ -1,6 +1,9 @@
 package main
 
 import (
+	"GoProject/webook/internal/repository"
+	"GoProject/webook/internal/repository/dao"
+	"GoProject/webook/internal/service"
 	"GoProject/webook/internal/web"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -29,18 +32,32 @@ func main() {
 		},
 		MaxAge: 12 * time.Hour,
 	}))
+	db, err := gorm.Open(mysql.Open("root:root@tcp(localhost:13316)/webook"))
+	if err != nil {
+		//数据库连接失败时，启动项目失败
+		panic(err)
+	}
+	err = dao.InitTable(db)
+	if err != nil {
+		panic(err)
+	}
 
-	userHandler(server)
+	//全部调用，不自己创建
+	ud := dao.NewUserDao(db)
+	repo := repository.NewUserRepository(ud)
+	svc := service.NewUserService(repo)
 
-	err := server.Run(":8080")
+	userHandler(server, svc)
+
+	err = server.Run(":8080")
 	if err != nil {
 		return
 	}
 
 }
 
-func userHandler(server *gin.Engine) {
-	u := web.NewUserHandler()
+func userHandler(server *gin.Engine, svc *service.UserService) {
+	u := web.NewUserHandler(svc)
 	//非RESTful风格
 	server.POST("/users/signup", u.SignUp)
 

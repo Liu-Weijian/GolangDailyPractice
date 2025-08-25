@@ -10,9 +10,14 @@ type UserRepository struct {
 	dao *dao.UserDao
 }
 
-func (r *UserRepository) Create(ctx context.Context, u domain.User) (string, error) {
+func NewUserRepository(dao *dao.UserDao) *UserRepository {
+	return &UserRepository{
+		dao: dao,
+	}
+}
 
-	return r.dao.Insert(ctx, domain.User{
+func (r *UserRepository) Create(ctx context.Context, u domain.User) error {
+	return r.dao.Insert(ctx, dao.User{
 		Email:    u.Email,
 		Password: u.Password,
 	})

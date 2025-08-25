@@ -68,7 +68,7 @@ func (u *UserHandler) SignUp(context *gin.Context) {
 	}
 
 	//调用service
-	_, err = u.svc.Signup(context, domain.User{
+	err = u.svc.Signup(context, domain.User{
 		Email:    req.Email,
 		Password: req.Password,
 	})
