@@ -3,6 +3,7 @@ package web
 import (
 	"GoProject/webook/internal/domain"
 	"GoProject/webook/internal/service"
+	"errors"
 	"fmt"
 	regexp "github.com/dlclark/regexp2"
 	"github.com/gin-gonic/gin"
@@ -45,7 +46,7 @@ func (u *UserHandler) SignUp(context *gin.Context) {
 		context.String(http.StatusOK, "系统错误")
 		return
 	}
-	fmt.Println(req.Email)
+	fmt.Println("注册邮箱：" + req.Email)
 	ok, err := u.emailExp.MatchString(req.Email)
 	if err != nil {
 		context.String(http.StatusOK, "邮箱格式错误")
@@ -72,6 +73,11 @@ func (u *UserHandler) SignUp(context *gin.Context) {
 		Email:    req.Email,
 		Password: req.Password,
 	})
+
+	if errors.Is(err, service.ErrUserDuplicateEmail) {
+		context.String(http.StatusOK, "邮箱已经被注册")
+		return
+	}
 	if err != nil {
 		context.String(http.StatusOK, "注册失败")
 		return
@@ -83,7 +89,23 @@ func (u *UserHandler) SignUp(context *gin.Context) {
 
 }
 func (u *UserHandler) Login(context *gin.Context) {
+	type LoginReq struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
 
+	var req LoginReq
+	if err := context.Bind(&req); err != nil {
+		return
+	}
+
+	err := u.svc.Login(context, domain.User{
+		Email:    req.Email,
+		Password: req.Password,
+	})
+	if err != nil {
+		return
+	}
 }
 
 func (u *UserHandler) Edit(context *gin.Context) {
