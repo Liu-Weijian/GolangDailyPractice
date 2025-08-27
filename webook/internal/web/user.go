@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	regexp "github.com/dlclark/regexp2"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -99,13 +100,28 @@ func (u *UserHandler) Login(context *gin.Context) {
 		return
 	}
 
-	err := u.svc.Login(context, domain.User{
+	user, err := u.svc.Login(context, domain.User{
 		Email:    req.Email,
 		Password: req.Password,
 	})
+	if errors.Is(err, service.ErrInvalidUserOrPassword) {
+		context.String(http.StatusOK, "账号/邮箱或密码不对")
+		return
+	}
+	if err != nil {
+		context.String(http.StatusOK, "系统错误")
+		return
+	}
+	//设置session
+	sess := sessions.Default(context)
+	sess.Set("userId", user.Id)
+	err = sess.Save()
 	if err != nil {
 		return
 	}
+
+	context.String(http.StatusOK, "登陆成功")
+	return
 }
 
 func (u *UserHandler) Edit(context *gin.Context) {

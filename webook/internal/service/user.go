@@ -32,15 +32,22 @@ func (svc *UserService) Signup(ctx context.Context, u domain.User) error {
 	return svc.repo.Create(ctx, u)
 }
 
-func (svc *UserService) Login(ctx context.Context, u domain.User) error {
+func (svc *UserService) Login(ctx context.Context, u domain.User) (domain.User, error) {
 	user, err := svc.repo.FindByEmail(ctx, u.Email)
-	if err != nil {
-		return err
+	if errors.Is(err, repository.ErrUserNotFound) {
+		return domain.User{}, ErrInvalidUserOrPassword
 	}
 
+	//密码解密判断
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(u.Password))
+
+	//
 	if err != nil {
-		return ErrInvalidUserOrPassword
+		return domain.User{}, ErrInvalidUserOrPassword
 	}
-	return nil
+	return domain.User{
+		Id:       user.Id,
+		Email:    user.Email,
+		Password: user.Password,
+	}, err
 }

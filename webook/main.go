@@ -5,7 +5,10 @@ import (
 	"GoProject/webook/internal/repository/dao"
 	"GoProject/webook/internal/service"
 	"GoProject/webook/internal/web"
+	"GoProject/webook/internal/web/middleware"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -32,6 +35,11 @@ func main() {
 		},
 		MaxAge: 12 * time.Hour,
 	}))
+
+	store := cookie.NewStore([]byte("secret"))
+	server.Use(sessions.Sessions("mysession", store))
+	server.Use(middleware.NewLoginMiddlewareBuilder().Build())
+
 	db, err := gorm.Open(mysql.Open("root:root@tcp(localhost:13316)/webook"))
 	if err != nil {
 		//数据库连接失败时，启动项目失败
