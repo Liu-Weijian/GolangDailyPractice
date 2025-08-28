@@ -17,71 +17,61 @@ import (
 )
 
 func main() {
+	db := initDB()
+
+	server := initWebServer()
+	initUserHdl(db, server)
+	server.Run(":8080")
+}
+
+func initUserHdl(db *gorm.DB, server *gin.Engine) {
+	ud := dao.NewUserDAO(db)
+	ur := repository.NewUserRepository(ud)
+	us := service.NewUserService(ur)
+	hdl := web.NewUserHandler(us)
+	hdl.RegisterRoutes(server)
+}
+
+func initDB() *gorm.DB {
+	db, err := gorm.Open(mysql.Open("root:root@tcp(localhost:13316)/webook"))
+	if err != nil {
+		panic(err)
+	}
+
+	err = dao.InitTables(db)
+	if err != nil {
+		panic(err)
+	}
+	return db
+}
+
+func initWebServer() *gin.Engine {
 	server := gin.Default()
 
 	server.Use(cors.New(cors.Config{
-		//AllowOrigins: []string{"http://localhost:3000"},
-		//AllowMethods:     []string{"POST", "PATCH"},
-		AllowHeaders: []string{"Content-Type", "Authorization"},
-		//ExposeHeaders:    []string{},
-
-		//cookie相关
+		//AllowAllOrigins: true,
+		//AllowOrigins:     []string{"http://localhost:3000"},
 		AllowCredentials: true,
+
+		AllowHeaders: []string{"Content-Type"},
+		//AllowHeaders: []string{"content-type"},
+		//AllowMethods: []string{"POST"},
 		AllowOriginFunc: func(origin string) bool {
-			if strings.HasPrefix(origin, "http://localhost") || strings.HasPrefix(origin, "https://localhost") {
+			if strings.HasPrefix(origin, "http://localhost") {
+				//if strings.Contains(origin, "localhost") {
 				return true
 			}
 			return strings.Contains(origin, "your_company.com")
 		},
 		MaxAge: 12 * time.Hour,
-	}))
+	}), func(ctx *gin.Context) {
+		println("这是我的 Middleware")
+	})
 
+	login := &middleware.LoginMiddlewareBuilder{}
+	// 存储数据的，也就是你 userId 存哪里
+	// 直接存 cookie
 	store := cookie.NewStore([]byte("secret"))
-	server.Use(sessions.Sessions("mysession", store))
-	server.Use(middleware.NewLoginMiddlewareBuilder().Build())
-
-	db, err := gorm.Open(mysql.Open("root:root@tcp(localhost:13316)/webook"))
-	if err != nil {
-		//数据库连接失败时，启动项目失败
-		panic(err)
-	}
-	err = dao.InitTable(db)
-	if err != nil {
-		panic(err)
-	}
-
-	//全部调用，不自己创建
-	ud := dao.NewUserDao(db)
-	repo := repository.NewUserRepository(ud)
-	svc := service.NewUserService(repo)
-
-	userHandler(server, svc)
-
-	err = server.Run(":8080")
-	if err != nil {
-		return
-	}
-
-}
-
-func userHandler(server *gin.Engine, svc *service.UserService) {
-	u := web.NewUserHandler(svc)
-	//非RESTful风格
-	server.POST("/users/signup", u.SignUp)
-
-	server.POST("/users/login", u.Login)
-
-	server.POST("/users/edit", u.Edit)
-
-	server.GET("/users/profile", u.Profile)
-
-	//RESTful风格
-	//注册
-	//server.PUT("/users", func(context *gin.Context) {})
-	//编辑
-	//server.POST("/users/:id", func(context *gin.Context) {})
-	//删除
-	//server.delete("/users", func(context *gin.Context) {})
-
-	// listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	server.Use(sessions.Sessions("ssid", store), login.CheckLogin())
+	return server
 }
