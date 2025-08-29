@@ -8,7 +8,7 @@ import (
 	"GoProject/webook/internal/web/middleware"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/cookie"
+	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -71,7 +71,12 @@ func initWebServer() *gin.Engine {
 	login := &middleware.LoginMiddlewareBuilder{}
 	// 存储数据的，也就是你 userId 存哪里
 	// 直接存 cookie
-	store := cookie.NewStore([]byte("secret"))
+	store, err := redis.NewStore(16, "tcp", "localhost:6379", "",
+		"", []byte("98WxGkjBdtL1KOaagDPPg0giNXzq0V5v"), []byte("7a2tNno5fOcLrjn8qkXhpzhQgd1hZbvJ"))
+
+	if err != nil {
+		panic(err)
+	}
 	server.Use(sessions.Sessions("ssid", store), login.CheckLogin())
 	return server
 }
