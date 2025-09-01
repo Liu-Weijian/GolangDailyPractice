@@ -30,11 +30,6 @@
       "static/chunks/main.js",
       "static/chunks/pages/users/login.js"
     ],
-    "/users/profile": [
-      "static/chunks/webpack.js",
-      "static/chunks/main.js",
-      "static/chunks/pages/users/profile.js"
-    ],
     "/users/signup": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",

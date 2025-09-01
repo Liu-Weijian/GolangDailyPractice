@@ -127,6 +127,20 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 	}
 }
 
+func (h *UserHandler) logout(ctx *gin.Context) {
+	sess := sessions.Default(ctx)
+	sess.Options(sessions.Options{
+		// 十五分钟
+		MaxAge: -1,
+	})
+	err := sess.Save()
+	if err != nil {
+		ctx.String(http.StatusOK, "系统错误")
+		return
+	}
+	ctx.String(http.StatusOK, "登录成功")
+}
+
 func (h *UserHandler) Edit(ctx *gin.Context) {
 
 }
