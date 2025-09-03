@@ -52,12 +52,15 @@ func initWebServer() *gin.Engine {
 		//AllowAllOrigins: true,
 		//AllowOrigins:     []string{"http://localhost:3000"},
 		AllowCredentials: true,
-
-		AllowHeaders: []string{"Content-Type", "application/json"},
+		//“content-type”全小写！！！！！
+		AllowHeaders: []string{"content-type", "application/json", "authorization"},
 		//AllowHeaders: []string{"content-type"},
-		//AllowMethods: []string{"POST"},
+
+		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+
 		AllowOriginFunc: func(origin string) bool {
-			if strings.HasPrefix(origin, "http://localhost:3000") {
+
+			if strings.HasPrefix(origin, "http://localhost") {
 				//if strings.Contains(origin, "localhost") {
 				return true
 			}

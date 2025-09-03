@@ -34,15 +34,15 @@ func (h *UserHandler) RegisterRoutes(server *gin.Engine) {
 	//server.POST("/user", h.SignUp)
 	//server.PUT("/user", h.SignUp)
 	//server.GET("/users/:username", h.Profile)
-	ug := server.Group("/users")
+	//ug := server.Group("/users")
 	// POST /users/signup
-	ug.POST("/signup", h.SignUp)
+	server.POST("/users/signup", h.SignUp)
 	// POST /users/login
-	ug.POST("/login", h.Login)
+	server.POST("/users/login", h.Login)
 	// POST /users/edit
-	ug.POST("/edit", h.Edit)
+	server.POST("/users/edit", h.Edit)
 	// GET /users/profile
-	ug.GET("/profile", h.Profile)
+	server.GET("/users/profile", h.Profile)
 }
 
 func (h *UserHandler) SignUp(ctx *gin.Context) {
