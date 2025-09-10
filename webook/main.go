@@ -6,6 +6,7 @@ import (
 	"GoProject/webook/internal/service"
 	"GoProject/webook/internal/web"
 	"GoProject/webook/internal/web/middleware"
+	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/redis"
@@ -50,18 +51,19 @@ func initWebServer() *gin.Engine {
 
 	server.Use(cors.New(cors.Config{
 		//AllowAllOrigins: true,
-		//AllowOrigins:     []string{"http://localhost:3000"},
+		//AllowOrigins:     []string{"http://localhost:3000/*"},
 		AllowCredentials: true,
-		//“content-type”全小写！！！！！
-		AllowHeaders: []string{"content-type", "application/json", "authorization"},
-		//AllowHeaders: []string{"content-type"},
 
-		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders: []string{"content-type", "authorization", "application/json"},
+		//AllowHeaders: []string{"content-type"},
+		AllowMethods: []string{"POST"},
 
 		AllowOriginFunc: func(origin string) bool {
 
+			fmt.Println(origin)
 			if strings.HasPrefix(origin, "http://localhost") {
 				//if strings.Contains(origin, "localhost") {
+				fmt.Println(time.Now())
 				return true
 			}
 			return strings.Contains(origin, "your_company.com")

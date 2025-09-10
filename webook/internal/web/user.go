@@ -3,16 +3,19 @@ package web
 import (
 	"GoProject/webook/internal/domain"
 	"GoProject/webook/internal/service"
+	"fmt"
 	regexp "github.com/dlclark/regexp2"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	jwt "github.com/golang-jwt/jwt/v5"
 	"net/http"
 )
 
 const (
 	emailRegexPattern = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$"
 	// 和上面比起来，用 ` 看起来就比较清爽
-	passwordRegexPattern = `^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$`
+	//passwordRegexPattern = `^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$`
+	passwordRegexPattern = ``
 )
 
 type UserHandler struct {
@@ -38,7 +41,7 @@ func (h *UserHandler) RegisterRoutes(server *gin.Engine) {
 	// POST /users/signup
 	server.POST("/users/signup", h.SignUp)
 	// POST /users/login
-	server.POST("/users/login", h.Login)
+	server.POST("/users/login", h.LoginJWT)
 	// POST /users/edit
 	server.POST("/users/edit", h.Edit)
 	// GET /users/profile
@@ -56,7 +59,7 @@ func (h *UserHandler) SignUp(ctx *gin.Context) {
 	if err := ctx.Bind(&req); err != nil {
 		return
 	}
-
+	fmt.Println(11)
 	isEmail, err := h.emailRexExp.MatchString(req.Email)
 	if err != nil {
 		ctx.String(http.StatusOK, "系统错误")
@@ -119,6 +122,45 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 			ctx.String(http.StatusOK, "系统错误")
 			return
 		}
+		ctx.String(http.StatusOK, "登录成功")
+	case service.ErrInvalidUserOrPassword:
+		ctx.String(http.StatusOK, "用户名或者密码不对")
+	default:
+		ctx.String(http.StatusOK, "系统错误")
+	}
+}
+
+func (h *UserHandler) LoginJWT(ctx *gin.Context) {
+	type Req struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	var req Req
+	if err := ctx.Bind(&req); err != nil {
+		return
+	}
+	u, err := h.svc.Login(ctx, req.Email, req.Password)
+	switch err {
+	case nil:
+		sess := sessions.Default(ctx)
+		sess.Set("userId", u.Id)
+		sess.Options(sessions.Options{
+			// 十五分钟
+			MaxAge: 900,
+		})
+		err = sess.Save()
+		if err != nil {
+			ctx.String(http.StatusOK, "系统错误")
+			return
+		}
+		//生成一个JWT
+		token := jwt.New(jwt.SigningMethodHS512)
+		fmt.Println(11)
+		tokenStr, err := token.SignedString([]byte("98WxGkjBdtL1KOaagDPPg0giNXzq0V5v"))
+		if err != nil {
+			ctx.String(http.StatusOK, "系统错误")
+		}
+		fmt.Printf(tokenStr)
 		ctx.String(http.StatusOK, "登录成功")
 	case service.ErrInvalidUserOrPassword:
 		ctx.String(http.StatusOK, "用户名或者密码不对")
