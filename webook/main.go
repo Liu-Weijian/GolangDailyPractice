@@ -51,12 +51,14 @@ func initWebServer() *gin.Engine {
 
 	server.Use(cors.New(cors.Config{
 		//AllowAllOrigins: true,
-		//AllowOrigins:     []string{"http://localhost:3000/*"},
-		AllowCredentials: true,
+		//AllowOrigins:     []string{"http://localhost:3000/"},
+		//AllowCredentials: true,
 
 		AllowHeaders: []string{"content-type", "authorization", "application/json"},
 		//AllowHeaders: []string{"content-type"},
 		AllowMethods: []string{"POST"},
+
+		ExposeHeaders: []string{"x-jwt-token"},
 
 		AllowOriginFunc: func(origin string) bool {
 

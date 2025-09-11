@@ -160,7 +160,7 @@ func (h *UserHandler) LoginJWT(ctx *gin.Context) {
 		if err != nil {
 			ctx.String(http.StatusOK, "系统错误")
 		}
-		fmt.Printf(tokenStr)
+		ctx.Header("x-jwt-token", tokenStr)
 		ctx.String(http.StatusOK, "登录成功")
 	case service.ErrInvalidUserOrPassword:
 		ctx.String(http.StatusOK, "用户名或者密码不对")
