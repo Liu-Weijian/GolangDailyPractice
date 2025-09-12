@@ -7,7 +7,6 @@ import (
 	regexp "github.com/dlclark/regexp2"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	jwt "github.com/golang-jwt/jwt/v5"
 	"net/http"
 )
 
@@ -154,14 +153,14 @@ func (h *UserHandler) LoginJWT(ctx *gin.Context) {
 			return
 		}
 		//生成一个JWT
-		token := jwt.New(jwt.SigningMethodHS512)
-		fmt.Println(11)
-		tokenStr, err := token.SignedString([]byte("98WxGkjBdtL1KOaagDPPg0giNXzq0V5v"))
-		if err != nil {
-			ctx.String(http.StatusOK, "系统错误")
-		}
-		ctx.Header("x-jwt-token", tokenStr)
-		ctx.String(http.StatusOK, "登录成功")
+		//token := jwt.New(jwt.SigningMethodHS512)
+		//fmt.Println(11)
+		//tokenStr, err := token.SignedString([]byte("98WxGkjBdtL1KOaagDPPg0giNXzq0V5v"))
+		//if err != nil {
+		//	ctx.String(http.StatusOK, "系统错误")
+		//}
+		//ctx.Header("x-jwt-token", tokenStr)
+		//ctx.String(http.StatusOK, "登录成功")
 	case service.ErrInvalidUserOrPassword:
 		ctx.String(http.StatusOK, "用户名或者密码不对")
 	default:
