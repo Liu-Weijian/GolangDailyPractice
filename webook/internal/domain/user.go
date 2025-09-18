@@ -13,12 +13,12 @@ type User struct {
 	//Addr Address
 }
 
-//type Address struct {
-//	Province string
-//	Region   string
-//}
+type Address struct {
+	Province string
+	Region   string
+}
 
-//func (u User) ValidateEmail() bool {
-// 在这里用正则表达式校验
-//return u.Email
-//}
+func (u User) ValidateEmail() string {
+	//在这里用正则表达式校验
+	return u.Email
+}
